@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#SBATCH --job-name=xxx
+#SBATCH --mem=150G
+#SBATCH --output=xxx.out
+##SBATCH --dependency=afterok:xxx
+
+## Load programs
+spack load bwa@0.7.17
+spack load samtools@1.6
+
+## Variables
+ref=/mnt/beegfs/jgarces/projects/exomes_test/tgen_pipeline/ref_gtf/hs37d5_plusRibo_plusOncoViruses_plusERCC.fa
+fastq=/mnt/beegfs/jgarces/projects/exomes_test/1_fastq/trimmed_fastq
+
+## Script
+for i in $fastq/*mm*_1P.fastq.gz
+do
+        # 1. BWA mem alignment, sam-bam, sorted bam
+        file=${i%_1P.*}
+        echo $file
+
+        bwa mem -t 20 \
+                -R '@RG\tID:'"$(basename $file)"'\tCN:cityProcessing\tLB:LibraryPreparation\tPL:SeqMachine\tSM:'"$(basename $file)" \
+                $ref \
+                ${file}_1P.fastq.gz ${file}_2P.fastq.gz |
+
+        samtools view -S -h -b -t ${ref}.fai - |
+        samtools sort --threads 15 - -o ${file}.sorted.bam
+
+        # 2. BAM index creation
+        samtools index ${file}.sorted.bam
+done
+
+mv $fastq/*bam* . #los bam se crean en la carpeta donde están los fastq, esto es para moverlos a la carpeta desde donde se corre el script.
