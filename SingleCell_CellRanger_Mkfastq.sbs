@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#############################################################################################################################
+## Single Cell Make Fastq (CellRanger)
+## jpromero@tecnun.es, 22/01/2018
+#############################################################################################################################
+
+## Initial SBATCH commands
+#SBATCH --job-name=XXX
+##SBATCH --mail-type=END
+##SBATCH --mail-user=XXX
+#SBATCH --time=24:00:00
+#SBATCH --output=XXX
+#SBATCH -N 1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=256G
+## Load Software
+module load cellranger/2.0.0
+. /mnt/beegfs/software/cellranger/2.0.0/sourceme.bash
+module load perl-5.24.1-gcc-4.9.4-6s3pqfc
+spack load bcl2fastq2@2.19.1.403
+## Script
+srun cellranger mkfastq --run=XXX \
+		   				--sample-sheet=XXX \
+		   				--id=XXX\
+	           			--jobmode=local \
+		   				--localcores=16 \
+		   				--localmem=256
+
+## XXX Parameters
+##
+## SBATCH --job-name : Specify own job name
+## SBATCH --mail-user : Where to send email after job completion
+## SBATCH --output : File where to write log output
+## SBATCH --run : Directory with run files (Provided by sequencer raw data)
+## SBATCH --sample-sheet : Experimental sample sheet
+## SBATCH --id : Specify own id for the process (e.g. VascularRemodelling_30dpi_mkfastq)
