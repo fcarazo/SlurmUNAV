@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#############################################################################################################################
+## script_fastqc.sbs > quality control with FastQC
+## jgarces@unav.es, 23/01/2018
+#############################################################################################################################
+
+#SBATCH --mem=150G
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=XXX
+#SBATCH --job-name=QCdemux
+#SBATCH --output=QCdemux.out
+
+## Load programs
+spack load fastqc@0.11.5
+
+## Variables
+outdir=fastQC_outs #indicar el nombre de la carpeta que se va a crear
+
+## Script
+mkdir -p $outdir
+
+for i in *.fastq.gz
+do
+        fastqc $i -o $outdir
+done
