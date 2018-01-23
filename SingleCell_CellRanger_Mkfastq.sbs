@@ -21,11 +21,11 @@ module load perl-5.24.1-gcc-4.9.4-6s3pqfc
 spack load bcl2fastq2@2.19.1.403
 ## Script
 srun cellranger mkfastq --run=XXX \
-		   				--sample-sheet=XXX \
-		   				--id=XXX\
-	           			--jobmode=local \
-		   				--localcores=16 \
-		   				--localmem=256
+		   	--sample-sheet=XXX \
+		   	--id=XXX\
+	           	--jobmode=local \
+		   	--localcores=16 \
+		   	--localmem=256
 
 ## XXX Parameters
 ##
