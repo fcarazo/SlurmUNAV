@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#############################################################################################################################
+## Slurm Script To Run R scripts.
+## jpromero@tecnun.es, 23/01/2018
+#############################################################################################################################
+
+## Initial SBATCH commands
+#SBATCH --job-name=XXX
+##SBATCH --mail-type=END
+##SBATCH --mail-user=XXX
+#SBATCH --time=24:00:00
+#SBATCH --output=XXX
+## Load Software
+module load r-3.4.2-gcc-4.9.4-nzpou5o
+module load libxml2-2.9.4-gcc-4.9.4-2dvj3uy
+## Scripts
+export R_LIBS=XXX
+srun Rscript XXX
+
+## XXX Parameters
+##
+## SBATCH --job-name : Specify own job name
+## SBATCH --mail-user : Where to send email after job completion
+## SBATCH --output : File where to write log output
+## SBATCH R_LIBS : Path to the location of your personal library (MUST BE CREATED BEFORE RUNNING THIS .sbs)
+## SBATCH Rscript : Path to the .R file to be used.
