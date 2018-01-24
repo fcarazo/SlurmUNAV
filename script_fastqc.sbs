@@ -26,7 +26,7 @@ do
 done
 
 
-cd $outdir # this part aggregates fastqc reports in a unique folder (goo.gl/zJ23SQ)
+cd $outdir # this part aggregates fastqc reports in a unique fq_aggregate folder (goo.gl/zJ23SQ)
 
 zips=`ls *.zip`
 
