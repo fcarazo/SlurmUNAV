@@ -1,6 +1,6 @@
 # SlurmUNAV
 Scripts for running different algorithms using Slurm in the Cluster.
-  - ScriptExample.sbs --> classical parameters to slurm scripts.
+  - ScriptExample.sbs -> classical parameters to slurm scripts.
   - script_bwa.sbs -> for exomes alignment with BWA mem (iterative).
   - script_fastqc -> QC of fastq (iterative).
   - Slurm_Rscripts -> structure for a Rscript in slurm
