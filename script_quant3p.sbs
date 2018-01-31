@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#############################################################################################################################
+## Slurm Script To Run quant3p job.
+## jpromero@tecnun.es, 31/01/2018
+#############################################################################################################################
+
+#!/bin/bash
+#SBATCH --job-name=quant3p
+#SBATCH --mem=12G
+#SBATCH --time=5-0:0:0
+#SBATCH --output=quant3p.log
+#SBATCH --cpus-per-task=12
+
+# Load programs
+spack load python@2.7.14%gcc@4.9.4
+spack load samtools@1.6
+spack load bedtools2
+spack load py-macs2
+
+# Run quant3p
+quant3p
