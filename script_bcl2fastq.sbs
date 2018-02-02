@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name=bcl2fastq
+#SBATCH --mem=12G
+#SBATCH --time=5-0:0:0
+#SBATCH --output=info.slurm.log
+#SBATCH --cpus-per-task=16
+
+spack load bcl2fastq2@2.19.1.403
+
+# change following bcl2fastq specific parameter for your run
+
+outdir= <your_dir>
+
+sampleSheet= <your_samplesheet.csv>
+
+mkdir -p $outdir
+
+bcl2fastq --output-dir  $outdir \
+	--use-bases-mask Y68,I8,I7Y8 \
+	--sample-sheet $sampleSheet \
+	--minimum-trimmed-read-length 60 \
+ 	--mask-short-adapter-read 7 \
+	--no-lane-splitting \
+	--barcode-mismatches 1 \
+	-r 10 \
+	-p 20 \
+	-w 10 \
+	-l INFO >> info.txt 2>&1
