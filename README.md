@@ -3,7 +3,7 @@ Scripts for running different algorithms using Slurm in the Cluster.
   - ScriptExample.sbs -> classical parameters to slurm scripts.
   - script_bwa.sbs -> exomes alignment with BWA mem (iterative).
   - script_fastqc -> QC of fastq (iterative).
-  - Slurm_Rscripts -> structure for a Rscript in slurm
+  - Slurm_Rscripts -> structure for a Rscript in slurm.
   - SingeCell_CellRanger_Mkfastq.sbs -> 10X demultiplexing script.
   - SingeCell_CellRanger_Counts.sbs -> 10X alignment (STAR) and secondary analysis.
   - script_bcl2fastq.sbs -> custom demultiplexing (Illumina based).
