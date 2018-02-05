@@ -8,5 +8,6 @@ Scripts for running different algorithms using Slurm in the Cluster.
   - SingeCell_CellRanger_Counts.sbs -> 10X alignment (STAR) and secondary analysis.
   - script_bcl2fastq.sbs -> custom demultiplexing (Illumina based).
   - script_quant3p.sbs -> RNAseq cuantification.
+  - script_variantCalling.sbs -> variant calling with Seurat (not working yet), MuTect2, Strelka and VarScan2 (iterative).
   
 Install_RPackages_Cluster.R -> how to install packages in a specific user folder (and add it to .Rprofile).
