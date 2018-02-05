@@ -1,0 +1,139 @@
+#!/bin/bash
+
+#############################################################################################################################
+## script_variantCalling.sbs > variant calling, via MuTect2, Strelka, Seurat and VarScan
+## jgarces@unav.es, 02/02/2018
+#############################################################################################################################
+
+#SBATCH --job-name=varCal
+#SBATCH --mem=40G
+#SBATCH --output=varCal.out
+#SBATCH --mail-type=BEGIN,FAIL,END
+#SBATCH --mail-user=user@unav.es
+
+## Load programs
+module load jdk-8u141-b15-gcc-4.9.4-udfg6wo
+module load gatk/3.6.0 
+spack load samtools@1.6
+
+## Variables
+bam_path=/mnt/beegfs/jgarces/projects/exomes_test/tgen_pipeline/2_recal,merge,dups
+ref=/mnt/beegfs/jgarces/genomes/gatk_ref/ucsc.hg19.fasta
+workDir=/mnt/beegfs/jgarces/projects/exomes_test/tgen_pipeline/3_calling
+cosmic=/mnt/beegfs/jgarces/genomes/cosmic_vcf/CosmicCodingMuts_chr_sorted.vcf
+snp_db=/mnt/beegfs/jgarces/genomes/gatk_db/dbsnp_138.hg19.vcf
+
+## Script
+mkdir -p $workDir
+cd $workDir
+printf ">>> Results will be stored in -> $workDir"
+
+normal=$(ls $bam_path/*.sorted.recal.dup.realign.bam | grep lit)
+printf "\n>>> Normal sample -> $normal"
+
+for i in `ls $bam_path/*.sorted.recal.dup.realign.bam | grep  -v lit`
+do 
+	if [[ $i != *"lit"* ]]
+	then
+		tumor=$i
+		printf "\n>>> Tumoral sample -> $tumor"
+	fi
+
+	file=$(basename ${tumor%.sorted.recal.dup.realign.bam})
+	printf "\n>>> Name for outputs -> $file\n"
+	printf " * * *\n"
+
+	# Caller 1: Seurat -> ERROR (???)
+	# printf "\n>>> Seurat, running\n"
+		# # Step 1 - Variant calling
+		# java -jar /mnt/beegfs/jgarces/software/seurat/seurat_tgen/jar_files/v2.5/Seurat-2.6.jar \
+		# 	-T Seurat \
+		# 	-l INFO \
+		# 	-R $ref \
+		# 	-I:dna_normal $normal \
+		# 	-I:dna_tumor $tumor \
+		# 	--both_strands \
+		# 	--metrics \
+		# 	--indels \
+		# 	--allele_metrics \
+		# 	-o ${file}.Seurat.vcf \
+		# 	-go ${file}.perChr.Seurat.txt \
+		# 	--pileup_info
+
+		# # Step 2 - Cleaning output
+		# grep "#" ${file}.Seurat.vcf > ${file}.Seurat.header
+		# grep -v "#" ${file}.Seurat.vcf | awk '{if($4 != $5) print $0}' > ${file}.Seurat.calls
+		# cat ${file}.Seurat.header ${file}.Seurat.calls > ${file}.Seurat.vcf
+
+	# Caller 2: Strelka (Illumina)
+	printf "\n>>> Strelka, running\n"		
+		# Step 1 - Generate and run Manta workflow
+		/mnt/beegfs/jgarces/software/manta-1.2.2/bin/configManta.py \
+			--normalBam $normal \
+			--tumorBam $tumor \
+			--referenceFasta $ref \
+			--runDir ${file}_manta_outs
+	
+		srun $workDir/${file}_manta_outs/runWorkflow.py -m local -j 20
+
+		# Step 2 - Generate and run strelka workflow
+		/mnt/beegfs/jgarces/software/strelka-2.8.4/bin/configureStrelkaSomaticWorkflow.py \
+			--normalBam $normal \
+			--tumorBam $tumor \
+			--referenceFasta $ref \
+			--indelCandidates $workDir/${file}_manta_outs/results/variants/candidateSmallIndels.vcf.gz \
+			--runDir ${file}_strelka_outs
+
+		srun $workDir/${file}_strelka_outs/runWorkflow.py -m local -j 20
+
+	# Caller 3: MuTect2
+	printf "\n>>> MuTect2, running\n"
+
+	java -jar $GATK \
+		-T MuTect2 \
+		-R $ref \
+		-I:normal $normal \
+		-I:tumor $tumor \
+		--cosmic $cosmic \
+		--dbsnp $snp_db \
+		--contamination_fraction_to_filter 0 \
+		--min_base_quality_score 5 \
+		--max_alt_alleles_in_normal_count 2 \
+		--max_alt_alleles_in_normal_qscore_sum 20 \
+		--max_alt_allele_in_normal_fraction 0.03 \
+		--out ${file}.MuTect.vcf
+
+	# Caller 4: VarScan2 (extra tgen)
+	printf "\n>>> VarScan2, running\n"
+
+	samtools mpileup -f $ref $normal $tumor | tee \
+	>(java -jar /mnt/beegfs/jgarces/software/varscan-2.3.9/VarScan.v2.3.9.jar somatic \
+		--mpileup ${file}.VarScan \
+		--min-var-freq 0.10 \
+		--strand-filter 0 \
+		--min-freq-for-hom 0.75 \
+		--min-avg-qual 15 \
+		--min-coverage 6 \
+		--variants) \
+	> \
+	>(java -jar /mnt/beegfs/jgarces/software/varscan-2.3.9/VarScan.v2.3.9.jar copynumber \
+		--mpileup ${file}.VarScan \
+		--min-coverage 6)
+	
+	java -jar /mnt/beegfs/jgarces/software/varscan-2.3.9/VarScan.v2.3.9.jar compare \
+		${file}.VarScan.snp ${file}.VarScan.indel \
+		merge \
+		${file}.VarScan.vcf
+
+	rm ${file}.VarScan.snp ${file}.VarScan.indel
+
+	java -jar /mnt/beegfs/jgarces/software/varscan-2.3.9/VarScan.v2.3.9.jar somaticFilter \
+		${file}.VarScan.vcf \
+		--output-file ${file}.VarScan.nonSomatic.vcf
+
+	echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+done
+
+cat varCal.out | grep -E "ERROR|error|Error|warning|WARNING|Warning|Exception|exception|Unexpected|unexpected" > errors.out
+
+printf "\n\n>>> Variant calling finished, at `date`"
