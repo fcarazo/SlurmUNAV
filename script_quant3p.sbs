@@ -18,5 +18,5 @@ spack load samtools@1.6
 spack load bedtools2
 spack load py-macs2
 
-# Run quant3p
-quant3p
+# Run quant3p. Path to the progrma must be included
+/usr/bin/quant3p
