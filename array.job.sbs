@@ -1,0 +1,43 @@
+#############################################################################################################################
+## Slurm Script To Run scripts in arrays.
+## dalameda@unav.es, 13/02/2018
+#############################################################################################################################
+
+#!/bin/bash
+#array.job.sbs
+#SBATCH --job-name=array
+#SBATCH -n 3 # cores
+#SBATCH -N 1 # on one node
+#SBATCH --mem=30G
+#SBATCH --time=5-0:0:0
+#SBATCH --mail-type=end
+#SBATCH --mail-user= <mail>
+#SBATCH -o %A_%a.out # Standard output A = array ID, a = job ID
+#SBATCH -e %A_%a.err # Standard error A = array ID, a = job ID
+
+# Run this version of the script in the folder containing the files to be used
+
+### LOAD PROGRAMS HERE ###
+
+## LAUNCH on console or using s sh caller (array.caller.sh)
+## start of array.caller.sh
+
+    #!/bin/bash
+    #FILES=($(ls -1 *.your-file)) # list of file you want to iterate. You can input the files the way you want
+    #NUM=${#FILES[@]} # get size of array
+    #ZBNUM=$(($NUM - 1)) # now subtract 1 as we have to use zero-based indexing (first cell is 0)
+
+    ## now submit to SLURM use %N where N is the number of file to send in batches
+    #if [ $ZBNUM -ge 0 ]; then
+    #sbatch --array=0-$ZBNUM <PATH-TO-array.sbs> # to send jobs in batches add %. --array=0-$ZBNUM%N where N is the number of jobs per batch
+    #fi
+    
+## end of array.caller.sh
+
+FILES=($(ls -1 *.your-file))
+
+# grab out filename from the array exported from our 'parent' shell
+
+filename=${FILES[$SLURM_ARRAY_TASK_ID]} # filename from the list. files will be taken from the list in order
+
+### PUT YOUR SCRIPT HERE using $filename as your input ###
