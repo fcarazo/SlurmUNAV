@@ -12,14 +12,16 @@
 #SBATCH --time=5-0:0:0
 #SBATCH --mail-type=end
 #SBATCH --mail-user= <mail>
-#SBATCH -o %A_%a.out # Standard output A = array ID, a = job ID
-#SBATCH -e %A_%a.err # Standard error A = array ID, a = job ID
+#SBATCH -o %A_%a.out # Standard output A = array ID, a = task ID
+#SBATCH -e %A_%a.err # Standard error A = array ID, a = task ID
+
+# Multiple TASKs are sent together to the cluster in a ARRAY
+# Each TASK is your script runned using a input file extracted from a input "list" of files you can generate as you want
 
 # Run this version of the script in the folder containing the files to be used
 
-### LOAD PROGRAMS HERE ###
+## LAUNCH the array script on console or using sh caller (array.caller.sh) with following bash script:
 
-## LAUNCH on console or using sh caller (array.caller.sh)
 ## start of array.caller.sh
 
     #!/bin/bash
@@ -29,10 +31,12 @@
 
     ## now submit to SLURM use %N where N is the number of file to send in batches
     #if [ $ZBNUM -ge 0 ]; then
-    #sbatch --array=0-$ZBNUM <PATH-TO-array.sbs> # to send jobs in batches add %. --array=0-$ZBNUM%N where N is the number of jobs per batch
+    #sbatch --array=0-$ZBNUM <PATH-TO-array.sbs> # to send tasks in batches add %. --array=0-$ZBNUM%N where N is the number of tasks per batch
     #fi
     
 ## end of array.caller.sh
+
+### LOAD PROGRAMS HERE ###
 
 FILES=($(ls -1 *.your-file))
 
