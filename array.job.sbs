@@ -19,7 +19,7 @@
 
 ### LOAD PROGRAMS HERE ###
 
-## LAUNCH on console or using s sh caller (array.caller.sh)
+## LAUNCH on console or using sh caller (array.caller.sh)
 ## start of array.caller.sh
 
     #!/bin/bash
