@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#############################################################################################################################
+## tables_rawdata.sbs > for calculating raw numbers from raw data (or trimmed data)
+## jgarces@unav.es, 19/02/2018
+#############################################################################################################################
+
+#SBATCH --job-name=tables_rawdata
+#SBATCH --output=log/tables_rawdata_trim_%A_%a.out
+#SBATCH --mail-type=BEGIN,FAIL,END
+#SBATCH --mail-user=jgarces@unav.es
+#SBATCH --mem=10G 
+#SBATCH --cpus-per-task=20
+
+## Variables
+path=/mnt/beegfs/jgarces/projects/macrogen/data/trimmed
+extension=*_[12]P.fastq.gz
+
+## Script
+cd $path
+
+echo "sample_name" > rawdata0.stats
+for i in ${path}/${extension}
+do
+	echo $(basename "$i" .fastq.gz) >> rawdata0.stats
+done
+
+echo "total_bases" > rawdata1.stats
+echo "GC(%)" > rawdata3.stats
+for i in ${path}/${extension}
+do
+	G=$(zcat $i | awk 'NR%4==2' | awk -F"G" '{print NF- 1}' | paste -sd+ | bc) #count number of Gs
+	C=$(zcat $i | awk 'NR%4==2' | awk -F"C" '{print NF- 1}' | paste -sd+ | bc)
+	all=$(zcat $i | awk 'NR%4==2' | wc -m) #count number of bases (characters)
+	echo $all | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta' >> rawdata1.stats #add thousands separator a numbers
+	echo "scale=2;(($C+$G)/$all)*100" | bc >> rawdata3.stats #scale=2, return 2 decimals
+done
+
+echo "read_count" > rawdata2.stats
+for i in ${path}/${extension}
+do
+	zcat $i | awk 'NR%4==2' | wc -l | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta' >> rawdata2.stats #count number of reads (lines)
+done
+
+echo "Q20(%)" > rawdata4.stats
+echo "Q30(%)" > rawdata5.stats
+for i in ${path}/${extension}
+do
+	Q20=$(zcat $i | awk 'NR%4==0' | awk -F"[56789:;<=>?@ABCDEFGHIJK]" '{print NF- 1}' | paste -sd+ | bc) #count number of bases > Q20
+	Q30=$(zcat $i | awk 'NR%4==0' | awk -F"[?@ABCDEFGHIJK]" '{print NF- 1}' | paste -sd+ | bc)
+	all=$(zcat $i | awk 'NR%4==0' | wc -m)
+	echo "scale=2;($Q20/$all)*100" | bc >> rawdata4.stats
+	echo "scale=2;($Q30/$all)*100" | bc >> rawdata5.stats
+done
+
+paste -d"\t" rawdata[0-9].stats > rawdata.stats
+rm rawdata[0-9].stats
