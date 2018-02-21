@@ -55,3 +55,11 @@ done
 
 paste -d"\t" rawdata[0-9].stats > rawdata.stats
 rm rawdata[0-9].stats
+
+
+# It creates a table like this:
+#sample_name     total_bases     read_count      GC(%)   Q20(%)  Q30(%)
+#CTC_S1_L002_R1_001      11412855856     75084578        51.00   95.00   91.00
+#CTC_S1_L002_R2_001      11412855856     75084578        52.00   93.00   88.00
+#lymphT_S2_L002_R1_001   11485760376     75564213        51.00   96.00   92.00
+#lymphT_S2_L002_R2_001   11485760376     75564213        52.00   94.00   88.00
