@@ -9,5 +9,6 @@ Scripts for running different algorithms using Slurm in the Cluster.
   - script_bcl2fastq.sbs -> custom demultiplexing (Illumina based).
   - script_quant3p.sbs -> RNAseq cuantification.
   - script_variantCalling.sbs -> variant calling with Seurat (not working yet), MuTect2, Strelka and VarScan2 (iterative).
+  - tables_rawdata.sbs -> make a table with basic information: number of bases, number of reads, % of GC, quality...
   
 Install_RPackages_Cluster.R -> how to install packages in a specific user folder (and add it to .Rprofile).
